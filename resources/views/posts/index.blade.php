@@ -6,8 +6,10 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <span>Your Posts</span>
-                    <a href="{{ route('posts.create') }}" class="btn btn-primary">Create New Post</a>
+                    <span>Posts</span>
+                    @auth
+                        <a href="{{ route('posts.create') }}" class="btn btn-primary">Create Post</a>
+                    @endauth
                 </div>
 
                 <div class="card-body">
@@ -22,26 +24,30 @@
                             <div class="card-body">
                                 <h5 class="card-title">{{ $post->title }}</h5>
                                 <h6 class="card-subtitle mb-2 text-muted">
-                                    Created on {{ $post->created_at->format('M d, Y') }}
+                                    By {{ $post->user->name }} on {{ $post->created_at->format('M d, Y') }}
                                 </h6>
                                 <p class="card-text">{{ Str::limit($post->content, 200) }}</p>
-                                <div class="d-flex gap-2">
-                                    <a href="{{ route('posts.show', $post) }}" class="btn btn-primary">Read More</a>
+                                <a href="{{ route('posts.show', $post) }}" class="btn btn-primary">Read More</a>
+                                
+                                @can('update', $post)
                                     <a href="{{ route('posts.edit', $post) }}" class="btn btn-secondary">Edit</a>
+                                @endcan
+                                
+                                @can('delete', $post)
                                     <form action="{{ route('posts.destroy', $post) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
                                     </form>
-                                </div>
+                                @endcan
                             </div>
                         </div>
                     @empty
-                        <p>You haven't created any posts yet.</p>
+                        <p>No posts found.</p>
                     @endforelse
                 </div>
             </div>
         </div>
     </div>
 </div>
-@endsection
+@endsection 
