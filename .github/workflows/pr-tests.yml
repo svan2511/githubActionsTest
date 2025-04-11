@@ -15,14 +15,11 @@ jobs:
         with:
           php-version: '8.2'
           extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, fileinfo, dom, curl, zip
-          coverage: xdebug
           
       - name: Copy .env
         run: |
           cp .env.example .env
           cp .env.example .env.testing
-          sed -i 's/DB_CONNECTION=mysql/DB_CONNECTION=sqlite/g' .env.testing
-          sed -i 's/DB_DATABASE=laravel/DB_DATABASE=:memory:/g' .env.testing
           
       - name: Install Dependencies
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
@@ -40,18 +37,9 @@ jobs:
           php artisan cache:clear
           php artisan migrate:fresh --env=testing
           
-      - name: Install NPM dependencies
-        run: npm install
-        
-      - name: Compile assets
-        run: npm run build
-        
       - name: Execute tests
         env:
           APP_ENV: testing
           DB_CONNECTION: sqlite
           DB_DATABASE: database/database.sqlite
-          CACHE_DRIVER: array
-          SESSION_DRIVER: array
-          QUEUE_CONNECTION: sync
-        run: vendor/bin/phpunit --testdox
+        run: vendor/bin/phpunit
