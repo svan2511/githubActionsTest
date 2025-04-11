@@ -19,7 +19,11 @@ jobs:
         coverage: xdebug
 
     - name: Copy .env
-      run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+      run: |
+        cp .env.example .env
+        cp .env.example .env.testing
+        sed -i 's/DB_CONNECTION=mysql/DB_CONNECTION=sqlite/g' .env.testing
+        sed -i 's/DB_DATABASE=laravel/DB_DATABASE=:memory:/g' .env.testing
 
     - name: Install Dependencies
       run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
@@ -32,8 +36,8 @@ jobs:
 
     - name: Create Database
       run: |
-        touch database/database.sqlite
         php artisan config:clear
+        php artisan cache:clear
         php artisan migrate:fresh --env=testing
 
     - name: Install NPM dependencies
@@ -44,6 +48,10 @@ jobs:
 
     - name: Execute tests
       env:
+        APP_ENV: testing
         DB_CONNECTION: sqlite
-        DB_DATABASE: database/database.sqlite
-      run: vendor/bin/phpunit 
+        DB_DATABASE: :memory:
+        CACHE_DRIVER: array
+        SESSION_DRIVER: array
+        QUEUE_CONNECTION: sync
+      run: vendor/bin/phpunit --testdox 
