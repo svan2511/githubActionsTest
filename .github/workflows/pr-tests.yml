@@ -35,6 +35,7 @@ jobs:
         
       - name: Create Database
         run: |
+          touch database/database.sqlite
           php artisan config:clear
           php artisan cache:clear
           php artisan migrate:fresh --env=testing
@@ -49,7 +50,7 @@ jobs:
         env:
           APP_ENV: testing
           DB_CONNECTION: sqlite
-          DB_DATABASE: ":memory:"
+          DB_DATABASE: database/database.sqlite
           CACHE_DRIVER: array
           SESSION_DRIVER: array
           QUEUE_CONNECTION: sync
