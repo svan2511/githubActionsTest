@@ -8,16 +8,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    services:
-      mysql:
-        image: mysql:5.7
-        env:
-          MYSQL_DATABASE: laravel
-          MYSQL_ROOT_PASSWORD: root
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-
     steps:
     - uses: actions/checkout@v3
 
@@ -25,7 +15,7 @@ jobs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: '8.2'
-        extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql, fileinfo, dom, curl, zip
+        extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, fileinfo, dom, curl, zip
         coverage: xdebug
 
     - name: Copy .env
@@ -42,16 +32,18 @@ jobs:
 
     - name: Create Database
       run: |
-        mysql -h 127.0.0.1 -u root -proot -e "CREATE DATABASE IF NOT EXISTS laravel_test;"
-        cp .env .env.testing
-        sed -i 's/DB_DATABASE=laravel/DB_DATABASE=laravel_test/g' .env.testing
-        sed -i 's/DB_USERNAME=root/DB_USERNAME=root/g' .env.testing
-        sed -i 's/DB_PASSWORD=/DB_PASSWORD=root/g' .env.testing
+        touch database/database.sqlite
+        php artisan config:clear
+        php artisan migrate:fresh --env=testing
+
+    - name: Install NPM dependencies
+      run: npm install
+
+    - name: Compile assets
+      run: npm run build
 
     - name: Execute tests
       env:
-        DB_CONNECTION: mysql
-        DB_DATABASE: laravel_test
-        DB_USERNAME: root
-        DB_PASSWORD: root
+        DB_CONNECTION: sqlite
+        DB_DATABASE: database/database.sqlite
       run: vendor/bin/phpunit 

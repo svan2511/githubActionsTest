@@ -26,23 +26,27 @@ class PostPolicyTest extends TestCase
 
     public function test_user_can_update_their_own_post()
     {
-        $this->assertTrue($this->policy->update($this->user, $this->post));
+        $response = $this->policy->update($this->user, $this->post);
+        $this->assertTrue($response->allowed());
     }
 
     public function test_user_cannot_update_other_users_post()
     {
         $otherUser = User::factory()->create();
-        $this->assertFalse($this->policy->update($otherUser, $this->post));
+        $response = $this->policy->update($otherUser, $this->post);
+        $this->assertFalse($response->allowed());
     }
 
     public function test_user_can_delete_their_own_post()
     {
-        $this->assertTrue($this->policy->delete($this->user, $this->post));
+        $response = $this->policy->delete($this->user, $this->post);
+        $this->assertTrue($response->allowed());
     }
 
     public function test_user_cannot_delete_other_users_post()
     {
         $otherUser = User::factory()->create();
-        $this->assertFalse($this->policy->delete($otherUser, $this->post));
+        $response = $this->policy->delete($otherUser, $this->post);
+        $this->assertFalse($response->allowed());
     }
 } 
